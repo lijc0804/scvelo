@@ -15,7 +15,7 @@ def moments(
     method="umap",
     use_rep=None,
     use_highly_variable=True,
-    add_M_total=False,
+    additional_layer=None,
     copy=False,
 ):
     """Computes moments for velocity estimation.
@@ -57,8 +57,8 @@ def moments(
     adata = data.copy() if copy else data
 
     layers = [layer for layer in {"spliced", "unspliced"} if layer in adata.layers]
-    if add_M_total:
-        layers = layers + ["total"]
+    if additional_layer is not None:
+        layers = layers + [additional_layer]
     if any([not_yet_normalized(adata.layers[layer]) for layer in layers]):
         normalize_per_cell(adata)
 
@@ -92,8 +92,8 @@ def moments(
             .A
         )
         if add_M_total:
-            adata.layers["M_total"] = (
-                csr_matrix.dot(connectivities, csr_matrix(adata.layers["total"]))
+            adata.layers["M_"+additional_layer] = (
+                csr_matrix.dot(connectivities, csr_matrix(adata.layers[additional_layer]))
                 .astype(np.float32)
                 .A
             )
